@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playball&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Paleta extraída de la foto real de la minivan */
+  --color-brand-orange: #D9531E; /* Naranja quemado */
+  --color-brand-red: #8B1C1C;    /* Rojo vino oscuro */
+  --color-brand-dark: #1E293B;
+  --color-brand-gray: #F1F5F9;
+  --font-sans: "Inter", sans-serif;
+  --font-logo: "Playball", cursive;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F8FAFC;
+  color: var(--color-brand-dark);
+  margin: 0;
+  min-height: 100vh;
+}
