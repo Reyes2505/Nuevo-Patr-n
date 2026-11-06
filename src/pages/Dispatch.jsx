@@ -28,15 +28,21 @@ export default function Dispatch() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over) return;
-    const boletoId = active.id;
-    const nuevaColumna = over.id;
-    setBoletos((prev) =>
-      prev.map((b) => (b.id === boletoId ? { ...b, estado: nuevaColumna } : b))
-    );
-  };
+const ESTADOS_VALIDOS = ['pagado', 'en_terminal', 'abordando', 'en_ruta', 'no_show'];
+
+const handleDragEnd = (event) => {
+  const { active, over } = event;
+  if (!over) return;
+  if (active.id === over.id) return;
+  
+  // Solo aceptar si el destino es una columna válida
+  if (!ESTADOS_VALIDOS.includes(over.id)) {
+    console.warn('Drop inválido: over.id no es una columna', over.id);
+    return;
+  }
+  
+  cambiarEstado(active.id, over.id);
+};
 
   // Ir al manifiesto con los pasajeros que ya abordaron
   const handleGenerarManifiesto = () => {
@@ -69,13 +75,19 @@ export default function Dispatch() {
       </header>
 
       <main className="flex-grow p-6">
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {columnas.map((col) => (
-              <ColumnaKanban key={col.id} columna={col} boletos={boletos.filter((b) => b.estado === col.id)} />
-            ))}
-          </div>
-        </DndContext>
+       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+  <div className="flex gap-3 md:gap-4 min-w-max pb-4">
+    {COLUMNAS.map(col => (
+      <ColumnaKanban
+        key={col.id}
+        columna={col}
+        boletos={boletos.filter(b => b.estado === col.id)}
+        conteo={conteos[col.id]}
+        onCambiarEstado={cambiarEstado}
+      />
+    ))}
+  </div>
+</DndContext>
       </main>
       <Footer />
     </div>

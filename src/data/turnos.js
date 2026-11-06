@@ -16,7 +16,6 @@ const obtenerFlota = () => {
     console.warn('Error leyendo flota:', e); 
   }
   
-  // Si no hay flota válida, guardar la default en localStorage
   localStorage.setItem('flotaConductores', JSON.stringify(FLOTA_DEFAULT));
   return FLOTA_DEFAULT;
 };
@@ -54,6 +53,7 @@ const generarAsignacionDia = (fecha, origen) => {
     return {};
   }
 
+  // Mezclar el pool con el random determinístico
   const poolMezclado = [...pool].sort(() => random() - 0.5);
 
   const ocupadosHasta = {};
@@ -61,21 +61,41 @@ const generarAsignacionDia = (fecha, origen) => {
 
   const asignacion = {};
 
-  // CORREGIDO: Turnos de 5:00 AM a 20:00 PM
+  // ✅ NUEVO: Índice rotativo para round-robin puro
+  let indiceRotativo = 0;
+
   for (let hora = 5; hora <= 20; hora++) {
     for (let minuto of [0, 30]) {
       if (hora === 20 && minuto === 30) continue;
       
       const minutoActual = (hora - 5) * 60 + minuto;
       
-      let choferDisponible = poolMezclado.find(c => ocupadosHasta[c.nombre] <= minutoActual);
-      if (!choferDisponible) choferDisponible = poolMezclado[0];
+      // ✅ NUEVO: Round-robin puro
+      // Buscar el siguiente conductor disponible desde el índice rotativo
+      let choferDisponible = null;
+      let intentos = 0;
+      
+      while (!choferDisponible && intentos < poolMezclado.length) {
+        const candidato = poolMezclado[indiceRotativo % poolMezclado.length];
+        
+        if (ocupadosHasta[candidato.nombre] <= minutoActual) {
+          choferDisponible = candidato;
+        }
+        
+        indiceRotativo++;
+        intentos++;
+      }
+      
+      // Si ningún conductor está disponible, usar el que se libere primero
+      if (!choferDisponible) {
+        choferDisponible = poolMezclado.reduce((min, c) => 
+          ocupadosHasta[c.nombre] < ocupadosHasta[min.nombre] ? c : min
+        , poolMezclado[0]);
+      }
       
       if (choferDisponible) {
         asignacion[`${hora}-${minuto}`] = choferDisponible;
-        if (ocupadosHasta[choferDisponible.nombre] <= minutoActual) {
-          ocupadosHasta[choferDisponible.nombre] = minutoActual + TIEMPO_TOTAL_OCUPADO;
-        }
+        ocupadosHasta[choferDisponible.nombre] = minutoActual + TIEMPO_TOTAL_OCUPADO;
       }
     }
   }
@@ -145,7 +165,6 @@ export const getTurnos = () => {
     const asignacionSM = generarAsignacionDia(fecha, 'San Marcos');
     const asignacionCAJ = generarAsignacionDia(fecha, 'Cajamarca');
     
-    // CORREGIDO: Turnos de 5 AM a 20 PM
     for (let hora = 5; hora <= 20; hora++) {
       for (let minuto of [0, 30]) {
         if (hora === 20 && minuto === 30) continue;

@@ -91,19 +91,19 @@ export default function SeatMap({ selectedSeats, onSeatToggle, occupiedSeatsExte
 
         <Seat number={1} x={265} y={210} w={80} h={70}/>
         <Seat number={2} x={265} y={120} w={80} h={70}/>
-        <Seat number={3} x={436} y={186} w={80} h={66}/>
+        <Seat number={5} x={436} y={186} w={80} h={66}/>
         <Seat number={4} x={436} y={259} w={80} h={66}/>
-        <Seat number={5} x={436} y={332} w={80} h={66}/>
-        <Seat number={6} x={576} y={118} w={79} h={74}/>
+        <Seat number={3} x={436} y={332} w={80} h={66}/>
+        <Seat number={8} x={576} y={118} w={79} h={74}/>
         <Seat number={7} x={576} y={259} w={80} h={66}/>
-        <Seat number={8} x={576} y={332} w={80} h={66}/>
-        <Seat number={9} x={716} y={118} w={79} h={74}/>
+        <Seat number={6} x={576} y={332} w={80} h={66}/>
+        <Seat number={11} x={716} y={118} w={79} h={74}/>
         <Seat number={10} x={716} y={259} w={80} h={66}/>
-        <Seat number={11} x={716} y={332} w={80} h={66}/>
-        <Seat number={12} x={864} y={122} w={80} h={65}/>
-        <Seat number={13} x={864} y={193} w={80} h={65}/>
-        <Seat number={14} x={864} y={264} w={80} h={65}/>
-        <Seat number={15} x={864} y={334} w={80} h={65}/>
+        <Seat number={9} x={716} y={332} w={80} h={66}/>
+        <Seat number={15} x={864} y={122} w={80} h={65}/>
+        <Seat number={14} x={864} y={193} w={80} h={65}/>
+        <Seat number={13} x={864} y={264} w={80} h={65}/>
+        <Seat number={12} x={864} y={334} w={80} h={65}/>
       </svg>
     </div>
   );

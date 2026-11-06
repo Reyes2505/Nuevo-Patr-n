@@ -50,12 +50,43 @@ export default function SeatDrawer({ isOpen, onClose, turno, origen, destino, mi
   }, [isTimerActive, timeLeft, asientosSeleccionados.length]);
 
   const getDatosUsuario = () => {
-    if (!user) return { nombre: '', apellidos: '', dni: '', edad: '', sexo: '' };
-    const partes = (user.nombre || '').split(' ');
-    const nombre = partes[0] || '';
-    const apellidos = partes.slice(1).join(' ') || '';
-    return { nombre, apellidos, dni: user.dni || '', edad: '', sexo: '' };
+  if (!user) return { nombre: '', apellidos: '', dni: '', edad: '', sexo: '' };
+  
+  const nombreCompleto = (user.nombre || '').trim();
+  const partes = nombreCompleto.split(/\s+/);
+  
+  let nombre = '';
+  let apellidos = '';
+  
+  // Si solo hay 1 palabra
+  if (partes.length === 1) {
+    nombre = partes[0];
+    apellidos = '';
+  }
+  // Si hay 2 palabras: 1 nombre + 1 apellido
+  else if (partes.length === 2) {
+    nombre = partes[0];
+    apellidos = partes[1];
+  }
+  // Si hay 3 palabras: 1 nombre + 2 apellidos (formato peruano: "Juan Pérez García")
+  else if (partes.length === 3) {
+    nombre = partes[0];
+    apellidos = `${partes[1]} ${partes[2]}`;
+  }
+  // Si hay 4 o más palabras: 2 nombres + 2 apellidos (formato peruano: "Aarón Rodrigo Reyes Abanto")
+  else if (partes.length >= 4) {
+    nombre = `${partes[0]} ${partes[1]}`;
+    apellidos = partes.slice(2).join(' ');
+  }
+  
+  return {
+    nombre,
+    apellidos,
+    dni: user.dni || '',
+    edad: '',
+    sexo: '',
   };
+};
 
   const handleSeatToggle = (num) => {
     if (asientosSeleccionados.includes(num)) {
