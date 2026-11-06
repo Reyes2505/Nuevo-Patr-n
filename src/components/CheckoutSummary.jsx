@@ -1,129 +1,141 @@
-import { useState, useEffect } from 'react';
 import RouteMap from './RouteMap';
 
-export default function CheckoutSummary({ selectedSeats, timeLeft, isTimerActive, origen, destino, turno, onOpenModal }) {
+export default function CheckoutSummary({ selectedSeats, origen, destino, turno, onOpenModal, errorFormulario, todosCompletos, asientosPendientes }) {
   const fare = 10.00;
   const total = selectedSeats.length * fare;
-  const [tiempoViaje, setTiempoViaje] = useState('Calculando...');
 
-  const dirOrigen = origen === 'San Marcos' ? 'Terminal Terrestre San Marcos (3N 411)' : 'Bolognesi 318, Cajamarca';
-  const dirDestino = destino === 'Cajamarca' ? 'Bolognesi 318, Cajamarca' : 'Terminal Terrestre San Marcos (3N 411)';
-
-  useEffect(() => {
-    const originPos = [-7.1670, -78.5015];
-    const destPos = [-7.3363, -78.1720];
-    const url = `https://router.project-osrm.org/route/v1/driving/${originPos[1]},${originPos[0]};${destPos[1]},${destPos[0]}?overview=false`;
-    fetch(url).then(r => r.json()).then(data => {
-      if (data.routes && data.routes.length > 0) {
-        const minutos = Math.round(data.routes[0].duration / 60);
-        const h = Math.floor(minutos / 60);
-        const m = minutos % 60;
-        setTiempoViaje(h > 0 ? `${h}h ${m} min` : `${m} min`);
-      }
-    }).catch(() => setTiempoViaje('54 min'));
-  }, []);
+  const dirOrigen = origen === 'San Marcos' 
+    ? 'Bolognesi 318, San Marcos 06321' 
+    : 'Terminal Terrestre San Marcos, 3N 411, Cajamarca 06003';
+  const dirDestino = destino === 'Cajamarca' 
+    ? 'Terminal Terrestre San Marcos, 3N 411, Cajamarca 06003' 
+    : 'Bolognesi 318, San Marcos 06321';
 
   return (
-    <div className="w-full max-w-md flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-4 lg:sticky lg:top-20">
       
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-        <div className="bg-slate-50/80 p-6 border-b border-slate-100">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-black text-slate-800 tracking-tight">Tu Viaje</h3>
-            <span className="text-xs font-bold bg-white text-blue-600 px-3 py-1 rounded-full shadow-sm border border-blue-100 flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              {tiempoViaje}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Origen</span>
-              <span className="font-bold text-slate-800 text-sm">{origen}</span>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <div className="bg-slate-50 p-4 border-b border-slate-200">
+          <div className="flex items-center justify-between gap-3">
+            
+            {/* ORIGEN */}
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-7 h-7 rounded-full bg-white border-2 border-brand-orange flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-black text-brand-orange">O</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Origen</p>
+                <p className="text-xs font-black text-slate-900 truncate">{origen}</p>
+              </div>
             </div>
-            <div className="text-slate-300">→</div>
-            <div className="flex-1 text-right">
-              <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Destino</span>
-              <span className="font-bold text-slate-800 text-sm">{destino}</span>
+
+            {/* FLECHA ANIMADA */}
+            <div className="text-brand-orange flex-shrink-0 animate-pulse-arrow">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+              </svg>
+            </div>
+
+            {/* DESTINO */}
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <div className="min-w-0 text-right">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Destino</p>
+                <p className="text-xs font-black text-slate-900 truncate">{destino}</p>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-white border-2 border-brand-red flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-black text-brand-red">D</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-4">
-          <div className="flex justify-between items-center bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-            <div>
-              <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">Salida</span>
-              <span className="font-black text-slate-800 text-xl">{turno?.hora}</span>
-            </div>
-            <div className="text-right">
-              <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">Vehículo</span>
-              <span className="font-bold text-slate-700 text-sm block">Toyota Hiace</span>
-              <span className="text-xs text-slate-500 font-mono bg-white px-2 py-0.5 rounded border border-slate-200 inline-block mt-1">{turno?.placa}</span>
-            </div>
+        <div className="p-4 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-bold">Salida</span>
+            <span className="font-black text-slate-900">{turno?.hora}</span>
           </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-bold">Placa</span>
+            <span className="font-mono font-black text-slate-900">{turno?.placa}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-bold">Conductor</span>
+            <span className="font-black text-slate-900 truncate ml-2 text-right">{turno?.conductor}</span>
+          </div>
+        </div>
 
-          <div className="text-xs text-slate-500 space-y-2.5 px-1">
-            <p className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center shrink-0">O</span> 
-              <span className="pt-1"><strong>Origen:</strong> {dirOrigen}</span>
-            </p>
-            <p className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">D</span> 
-              <span className="pt-1"><strong>Destino:</strong> {dirDestino}</span>
-            </p>
-            <p className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">C</span> 
-              <span className="pt-1"><strong>Conductor:</strong> {turno?.conductor}</span>
-            </p>
-          </div>
+        <div className="px-4 pb-4 space-y-1.5">
+          <p className="text-[10px] text-slate-500 flex items-start gap-1.5">
+            <span className="text-brand-orange font-black flex-shrink-0">O</span>
+            <span className="leading-snug">{dirOrigen}</span>
+          </p>
+          <p className="text-[10px] text-slate-500 flex items-start gap-1.5">
+            <span className="text-brand-red font-black flex-shrink-0">D</span>
+            <span className="leading-snug">{dirDestino}</span>
+          </p>
         </div>
 
         <RouteMap />
       </div>
 
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 p-6">
-        <div className="flex justify-between items-center mb-3 text-sm">
-          <span className="text-slate-500 font-medium">Asientos elegidos</span>
-          <span className={`font-black px-3 py-1 rounded-lg ${selectedSeats.length > 0 ? 'bg-orange-100 text-brand-orange' : 'bg-slate-100 text-slate-400'}`}>
-            {selectedSeats.length > 0 ? selectedSeats.sort((a,b)=>a-b).map(n => `N°${n}`).join(', ') : 'Ninguno'}
-          </span>
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         
-        <div className="flex justify-between items-center mb-4 text-sm border-b border-slate-100 pb-4">
-          <span className="text-slate-500 font-medium">Tarifa (x{selectedSeats.length})</span>
-          <span className="font-bold text-slate-700">S/ {total.toFixed(2)}</span>
-        </div>
-        
-        <div className="flex justify-between items-end mb-6">
-          <span className="font-black text-slate-800 text-lg">Total</span>
-          <span className="text-4xl font-black text-brand-red tracking-tighter">S/ {total.toFixed(2)}</span>
-        </div>
-
-        {isTimerActive && (
-          <div className="bg-orange-50 border border-orange-200 text-orange-700 text-xs p-3 rounded-xl mb-5 flex items-center justify-between font-medium">
-            <span className="flex items-center gap-2">
-              <span className="animate-pulse w-2 h-2 rounded-full bg-orange-500"></span>
-              Reserva expira en:
-            </span>
-            <span className="font-black font-mono text-sm bg-white px-2 py-0.5 rounded border border-orange-200">{timeLeft}</span>
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">
+                {selectedSeats.length === 0 ? 'Sin asientos' : `${selectedSeats.length} asiento${selectedSeats.length > 1 ? 's' : ''}`}
+              </p>
+              <p className="text-xs font-bold text-slate-700">Tarifa única × pasajero</p>
+            </div>
+            <p className="text-3xl font-black text-brand-orange tracking-tighter">S/ {total.toFixed(2)}</p>
           </div>
-        )}
 
-        {/* BOTÓN CONECTADO AL MODAL */}
-        <button 
-          onClick={onOpenModal}
-          disabled={selectedSeats.length === 0}
-          className={`w-full py-4 rounded-2xl font-black text-white text-lg transition-all flex items-center justify-center gap-2
-            ${selectedSeats.length > 0
-              ? 'bg-gradient-to-r from-[#5C1E8C] to-[#7c2aa8] shadow-[0_10px_20px_-10px_rgba(92,30,140,0.8)] hover:shadow-[0_15px_25px_-10px_rgba(92,30,140,0.9)] hover:-translate-y-0.5' 
-              : 'bg-slate-300 cursor-not-allowed shadow-none'
-            }`}
-        >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-          Pagar con Yape
-        </button>
-        <p className="text-center text-[11px] text-slate-400 font-medium mt-4">
-          Pago 100% seguro · Boleto QR inmediato
-        </p>
+          {selectedSeats.length > 0 && (
+            <div className={`text-[11px] p-2.5 rounded-lg mb-3 font-bold flex items-center justify-between ${
+              todosCompletos ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+            }`}>
+              <span>
+                {todosCompletos 
+                  ? '✓ Todos los pasajeros registrados' 
+                  : `Faltan ${asientosPendientes} pasajero${asientosPendientes !== 1 ? 's' : ''} por registrar`
+                }
+              </span>
+              {todosCompletos && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+              )}
+            </div>
+          )}
+
+          {errorFormulario && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-[11px] p-2.5 rounded-lg mb-3 font-bold">
+              {errorFormulario}
+            </div>
+          )}
+
+          <button 
+            onClick={onOpenModal} 
+            disabled={!todosCompletos}
+            className={`w-full py-3.5 font-black text-sm uppercase tracking-wider transition-all rounded-xl shadow-lg ${
+              todosCompletos 
+                ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-brand-orange/30 hover:-translate-y-0.5' 
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+            }`}>
+            {todosCompletos ? 'Continuar con el pago' : 'Completa los datos'}
+          </button>
+        </div>
+
+        <div className="px-5 pb-4 border-t border-slate-100 pt-3">
+          <div className="flex items-center justify-center gap-4 opacity-60">
+            <img src="/yape-logo.png" alt="Yape" className="h-5 object-contain" />
+            <img src="/tarjeta-logo.png" alt="Tarjeta" className="h-5 object-contain" />
+            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              Efectivo
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

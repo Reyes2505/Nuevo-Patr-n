@@ -1,55 +1,17 @@
-import { useState, useEffect } from 'react';
-
 export default function RouteMap() {
-  const [tiempoEstimado, setTiempoEstimado] = useState('');
-
-  // Coordenadas exactas
-  const originPos = [-7.1670, -78.5015];
-  const destPos = [-7.3363, -78.1720];
-
-  useEffect(() => {
-    // Usamos OSRM para calcular el tiempo real (lo pasamos al padre, pero lo dejamos aquí por si acaso)
-    const url = `https://router.project-osrm.org/route/v1/driving/${originPos[1]},${originPos[0]};${destPos[1]},${destPos[0]}?overview=false`;
-    
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        if (data.routes && data.routes.length > 0) {
-          const segundos = data.routes[0].duration;
-          const minutos = Math.round(segundos / 60);
-          const horas = Math.floor(minutos / 60);
-          const minRestantes = minutos % 60;
-          setTiempoEstimado(horas > 0 ? `${horas}h ${minRestantes} min` : `${minutos} min`);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  // URL del mapa visual
-  const mapUrl = "https://maps.google.com/maps?q=Terminal+Terrestre+San+Marcos,+Cajamarca&t=&z=10&ie=UTF8&iwloc=&output=embed&saddr=Terminal+Terrestre+San+Marcos,+Cajamarca&daddr=Empresa+transportes+Divino+Patron+San+Marcos+SRL.,+Bolognesi+318,+San+Marcos+06321&dirflg=d";
-
   return (
-    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 w-full mt-6">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-bold text-slate-800">Trazado de Ruta</h3>
-        <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded">
-          Carretera 3N
-        </span>
-      </div>
-      
-      <div className="w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
-        <iframe 
-          src={mapUrl}
-          width="100%" 
-          height="100%" 
-          style={{ border: 0 }} 
-          allowFullScreen="" 
-          loading="lazy" 
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Ruta San Marcos a Cajamarca"
-          className="absolute inset-0"
-        ></iframe>
-      </div>
+    <div className="w-full h-64 bg-slate-100 border-t border-slate-200 relative">
+      <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d140345.20891334763!2d-78.4190239880696!3d-7.23721881174142!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x91b25b1049888c41%3A0x3d1050867546664a!2sTerminal%20Terrestre%20San%20Marcos%2C%203N%20411%2C%20Cajamarca%2006003!3m2!1d-7.167088799999999!2d-78.5015892!4m5!1s0x91b217c9aa61b89d%3A0x50c51759b06a9026!2sEmpresa%20transportes%20Divino%20Patr%C3%B3n%20San%20Marcos%20SRL.%2C%20Bolognesi%20318%2C%20San%20Marcos%2006321!3m2!1d-7.3363301!2d-78.17207719999999!5e1!3m2!1ses-419!2spe!4v1793741002250!5m2!1ses-419!2spe" 
+        width="100%" 
+        height="100%" 
+        style={{ border: 0 }} 
+        allowFullScreen="" 
+        loading="lazy" 
+        referrerPolicy="strict-origin-when-cross-origin"
+        title="Ruta San Marcos a Cajamarca"
+        className="grayscale-[20%] hover:grayscale-0 transition-all duration-500"
+      ></iframe>
     </div>
   );
 }

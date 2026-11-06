@@ -1,6 +1,32 @@
-/node_modules
-/dist
-/build
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Producción
+build/
+dist/
+
+# Variables de entorno
 .env
+.env.local
+.env.production
+.env.development
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
 .DS_Store
-*.log
+Thumbs.db
+
+# Vite
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
