@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import NotificationCenter from '../../components/NotificationCenter';
+import MonitorEmbarque from '../../components/MonitorEmbarque';
 
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Cerrado en móvil por defecto
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -14,7 +16,6 @@ export default function AdminLayout() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Cerrar sidebar al navegar en móvil
   useEffect(() => {
     if (isMobile) setSidebarOpen(false);
   }, [location.pathname, isMobile]);
@@ -54,15 +55,10 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
       
-      {/* Overlay móvil */}
       {isMobile && sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* SIDEBAR */}
       <aside className={`
         bg-[#18191B] text-white flex flex-col transition-all duration-300 fixed h-full z-50
         ${sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full md:translate-x-0 md:w-20'}
@@ -78,11 +74,7 @@ export default function AdminLayout() {
             <span className="text-xl font-black text-brand-orange hidden md:block">NP</span>
           )}
           
-          {/* Botón cerrar en móvil */}
-          <button 
-            onClick={() => setSidebarOpen(false)} 
-            className="md:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -114,7 +106,6 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* TOP BAR MÓVIL */}
       <div className="md:hidden fixed top-0 left-0 right-0 bg-[#18191B] text-white z-30 h-14 flex items-center justify-between px-4">
         <button onClick={() => setSidebarOpen(true)} className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -126,7 +117,6 @@ export default function AdminLayout() {
         <div className="w-9"></div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL */}
       <main className={`
         flex-1 transition-all duration-300 
         pt-14 md:pt-0
@@ -135,6 +125,10 @@ export default function AdminLayout() {
       `}>
         <Outlet />
       </main>
+
+      {/* COMPONENTES DE NOTIFICACIÓN EN TIEMPO REAL */}
+      <NotificationCenter />
+      <MonitorEmbarque />
     </div>
   );
 }

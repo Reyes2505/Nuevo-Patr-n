@@ -5,7 +5,7 @@ import QRCode from 'react-qr-code';
 import { useUser } from '../context/UserContext';
 import { getYapeEmpresa } from '../data/turnos';
 
-export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selectedSeats, total, turno, origen, destino, pasajeros }) {
+export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selectedSeats, total, turno, origen, destino, pasajeros, declaracionFirmada, solicitaImpresion }) {
   const { agregarBoleto, misBoletos } = useUser();
   const navigate = useNavigate();
   const [step, setStep] = useState('form');
@@ -71,7 +71,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
       };
     });
 
-    // Calcular fecha del viaje
     const hoy = new Date();
     const fechaViajeObj = new Date(hoy);
     if (turno.dia !== undefined) {
@@ -92,7 +91,31 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
       nombre: `${pasajerosArray[0].nombre} ${pasajerosArray[0].apellidos}`,
       dni: pasajerosArray[0].dni,
       pasajeros: pasajerosArray,
+      declaracionFirmada: declaracionFirmada || false, 
+      solicitaImpresion: solicitaImpresion || false   
     };
+
+    // === NOTIFICACIÓN INMEDIATA AL POS Y ADMIN ===
+    const pasajeroEspecial = pasajerosArray.find(p => {
+        const edad = parseInt(p.edad, 10);
+        return !isNaN(edad) && (edad < 13 || edad >= 80);
+    });
+
+    if (pasajeroEspecial) {
+        window.dispatchEvent(new CustomEvent('nueva-venta-declaracion', {
+            detail: {
+                pasajero: `${pasajeroEspecial.nombre} ${pasajeroEspecial.apellidos}`,
+                dni: pasajeroEspecial.dni,
+                asiento: pasajeroEspecial.asiento,
+                solicitaImpresion: solicitaImpresion || false,
+                codigoBoleto: codigoFinal,
+                turnoHora: turno.hora,
+                placa: turno.placa,
+                esAlertaInmediata: true
+            }
+        }));
+    }
+    // ==============================================
 
     setStep('processing');
     
@@ -152,7 +175,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
       >
         <AnimatePresence mode="wait">
           
-          {/* PASO 1: FORMULARIO */}
           {step === 'form' && (
             <motion.div key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-6">
               <div className="text-center mb-6">
@@ -255,7 +277,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
             </motion.div>
           )}
 
-          {/* PASO 2: PROCESANDO */}
           {step === 'processing' && (
             <motion.div key="processing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="p-12 text-center">
               <div className="relative w-24 h-24 mx-auto mb-6">
@@ -270,7 +291,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
             </motion.div>
           )}
 
-          {/* PASO 3: IMPRIMIENDO */}
           {step === 'printing' && (
             <motion.div key="printing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-8 text-center overflow-hidden relative">
               <div className="w-full h-2 bg-slate-900 rounded-full mb-4 shadow-inner relative z-10"></div>
@@ -288,7 +308,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
             </motion.div>
           )}
 
-          {/* PASO 4: ÉXITO CON BOLETO PREMIUM */}
           {step === 'success' && boletoCreado && (
             <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }} className="p-6">
               <div className="text-center mb-4">
@@ -302,9 +321,7 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
                 <h2 className="text-2xl font-black text-slate-900">¡Pago exitoso!</h2>
               </div>
 
-              {/* BOLETO PREMIUM */}
               <div className="bg-[#18191B] rounded-2xl overflow-hidden shadow-2xl mb-4">
-                {/* Header del boleto */}
                 <div className="p-4 flex justify-between items-center border-b border-white/10">
                   <div>
                     <p className="text-[9px] font-black text-brand-orange uppercase tracking-widest">Nuevo Patrón</p>
@@ -317,13 +334,11 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
                 </div>
 
                 <div className="p-5 bg-white">
-                  {/* FECHA DEL VIAJE - DESTACADA */}
                   <div className="bg-gradient-to-r from-brand-orange to-orange-600 rounded-xl p-3 mb-4 text-center">
                     <p className="text-[9px] font-black text-white/80 uppercase tracking-widest mb-1">Fecha del viaje</p>
                     <p className="text-sm font-black text-white capitalize">{fechaViajeFormateada}</p>
                   </div>
 
-                  {/* RUTA */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-dashed border-slate-300">
                     <div>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen</p>
@@ -336,20 +351,17 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
                     </div>
                   </div>
 
-                  {/* HORA DE SALIDA - DESTACADA */}
                   <div className="bg-slate-50 rounded-xl p-3 mb-4 text-center border border-slate-200">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hora de salida</p>
                     <p className="text-2xl font-black text-slate-900">{turno?.hora}</p>
                   </div>
 
-                  {/* QR CODE */}
                   <div className="flex justify-center mb-4">
                     <div className="bg-white p-3 border-2 border-dashed border-slate-300 rounded-xl">
                       <QRCode value={qrValue} size={120} fgColor="#0F172A" />
                     </div>
                   </div>
 
-                  {/* INFO PRIMORDIAL */}
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
                       <span className="text-[10px] font-black text-slate-400 uppercase">Pasajero</span>
@@ -373,7 +385,6 @@ export default function CheckoutModal({ isOpen, onClose, onPagoCompletado, selec
                     </div>
                   </div>
 
-                  {/* Código de barras simulado */}
                   <div className="w-full h-10 bg-[repeating-linear-gradient(90deg,#0F172A_0px,#0F172A_2px,#fff_2px,#fff_4px)] opacity-80 rounded-sm mb-3"></div>
                   
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 text-center">

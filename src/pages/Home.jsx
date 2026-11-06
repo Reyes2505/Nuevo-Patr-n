@@ -250,8 +250,12 @@ function Cuenta({ salida, compacto = false }) {
 }
 
 const TurnoCard = memo(function TurnoCard({ turno, ahora, pasajeros, onSelect, index }) {
-  const salida = fechaDeSalida(turno, ahora);
-  const t = estadoTemporal(salida, ahora);
+  // RELOJ LOCAL: Se actualiza cada 1 segundo para que el cronómetro sea fluido
+  const ahoraLocal = useNow(1000);
+  
+  const salida = fechaDeSalida(turno, ahoraLocal);
+  const t = estadoTemporal(salida, ahoraLocal);
+  // ... (el resto de variables: libres, agotado, etc. se quedan igual)
   const libres = turno.asientosDisponibles;
   const agotado = libres === 0;
   const sinCupo = !agotado && libres < pasajeros;
@@ -365,26 +369,33 @@ const TurnoCard = memo(function TurnoCard({ turno, ahora, pasajeros, onSelect, i
           <span className="truncate">{turno.conductor || 'Por asignar'}</span>
         </p>
 
-        {/* Estado / Cronómetro destacado */}
+         {/* Estado / Cronómetro destacado (CORREGIDO) */}
         {mostrarCronometro ? (
-          <div className={`rounded-xl p-3 mb-3 text-center ${
+          <div className={`rounded-xl p-3 mb-3 text-center transition-colors duration-300 ${
             urgente ? 'bg-red-50 border border-red-100' : 'bg-orange-50 border border-orange-100'
           }`}>
             <p className={`text-2xl font-black font-mono tracking-tight tabular-nums ${
               urgente ? 'text-red-600' : 'text-brand-orange'
             }`}>
-              {cerrando ? '🚨 CERRANDO' : `${t.min}:${String(t.seg).padStart(2, '0')}`}
+              {/* Si está cerrando muestra alerta, si no, el tiempo restante */}
+              {cerrando ? '🚨 CERRANDO' : `${t.min}:${String(Math.max(0, t.seg)).padStart(2, '0')}`}
             </p>
             <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${
               urgente ? 'text-red-600' : 'text-brand-orange'
-            }`}>{t.mensaje}</p>
+            }`}>
+              {cerrando ? 'Último llamado' : t.mensaje}
+            </p>
           </div>
         ) : (
+          /* ESTA ES LA CAJA GRIS QUE ANTES REPETÍA LA HORA */
           <div className="rounded-xl p-3 mb-3 text-center bg-slate-50 border border-slate-100">
-            <p className="text-lg font-black font-mono tracking-tight text-slate-900">
-              {hora} {periodo}
+            <div className="flex items-center justify-center gap-1.5 text-slate-400">
+              <Icon name="check" className="w-4 h-4" />
+              <p className="text-xs font-black uppercase tracking-wider">Salida Programada</p>
+            </div>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">
+              Abordaje 15 min antes
             </p>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Programado</p>
           </div>
         )}
 

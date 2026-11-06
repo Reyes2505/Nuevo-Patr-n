@@ -14,6 +14,8 @@ export default function Profile() {
     email: user?.email || '',
     telefono: user?.celular || '',
     dni: user?.dni || '',
+    fechaNacimiento: user?.fechaNacimiento || '', // NUEVO
+    sexo: user?.sexo || '',                       // NUEVO
   });
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
@@ -89,7 +91,16 @@ export default function Profile() {
     e.preventDefault();
     setGuardando(true);
     setTimeout(() => {
-      const userActualizado = { ...user, ...formData, celular: formData.telefono };
+      // Se incluyen los nuevos campos en el guardado
+      const userActualizado = { 
+        ...user, 
+        nombre: formData.nombre,
+        email: formData.email,
+        dni: formData.dni,
+        celular: formData.telefono, 
+        fechaNacimiento: formData.fechaNacimiento,
+        sexo: formData.sexo
+      };
       localStorage.setItem('user', JSON.stringify(userActualizado));
       setGuardando(false);
       setEditando(false);
@@ -142,7 +153,6 @@ export default function Profile() {
           esAdminActual ? 'border-amber-300 bg-gradient-to-br from-amber-50/50 to-white' : 'border-slate-200'
         }`}>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* Avatar grande */}
             <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-black shadow-lg flex-shrink-0 ${
               esAdminActual 
                 ? 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-amber-500/30' 
@@ -151,14 +161,12 @@ export default function Profile() {
               {user.nombre?.charAt(0).toUpperCase() || 'U'}
             </div>
             
-            {/* Info principal */}
             <div className="flex-1 text-center md:text-left">
               <p className="text-[11px] font-black text-brand-orange uppercase tracking-widest mb-1">Tu perfil de cliente</p>
               <h1 className="text-3xl font-black text-slate-900">{user.nombre || 'Usuario Nuevo Patrón'}</h1>
               <p className="text-sm text-slate-500 font-medium mt-1">DNI: {user.dni || '---'} · Cel: {user.celular ? `+51 ${user.celular}` : '---'}</p>
               
               <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-4">
-                {/* BADGE DINÁMICO: Dorado para admin, verde para cliente */}
                 {esAdminActual ? (
                   <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg shadow-amber-500/30">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -177,7 +185,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Botón editar */}
             {!editando && (
               <button onClick={() => setEditando(true)}
                 className="bg-[#18191B] hover:bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-black/10 flex items-center gap-2">
@@ -308,6 +315,26 @@ export default function Profile() {
                   disabled={!editando} maxLength={8}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all"/>
               </div>
+              
+              {/* NUEVOS CAMPOS: FECHA DE NACIMIENTO Y SEXO */}
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fecha de Nacimiento</label>
+                <input type="date" value={formData.fechaNacimiento} onChange={(e) => setFormData({...formData, fechaNacimiento: e.target.value})}
+                  disabled={!editando}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all"/>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Sexo</label>
+                <select value={formData.sexo} onChange={(e) => setFormData({...formData, sexo: e.target.value})}
+                  disabled={!editando}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all appearance-none">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Otro">Prefiero no decirlo</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Celular</label>
                 <input type="tel" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})}
